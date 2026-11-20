@@ -65,7 +65,7 @@ class Inventory @Inject constructor(
 
     @Suppress("KotlinConstantConditions")
     override val hasPro: Boolean
-        get() = IS_GENERIC ||
+        get() = LocalFeatures.enabled || IS_GENERIC ||
                 (BuildConfig.DEBUG && preferences.getBoolean(R.string.p_debug_pro, false)) ||
                 hasSubscription
 

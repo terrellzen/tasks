@@ -178,7 +178,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "tasks-org"
+            packageName = "tasks-personal"
             packageVersion = version.toString()
 
             modules(

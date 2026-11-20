@@ -1,0 +1,64 @@
+name: Personal subscription-free builds
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [android, linux, windows]
+        include:
+          - platform: android
+            os: ubuntu-latest
+          - platform: linux
+            os: ubuntu-22.04
+          - platform: windows
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-gradle
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools platforms;android-37 build-tools;37.0.0
+      - name: Check fork policy
+        run: python scripts/personal/check-policy.py
+      - name: Test independent sync
+        if: matrix.platform == 'linux'
+        run: ./gradlew :composeApp:desktopTest --tests org.tasks.sync.IndependentSyncTest -Dorg.gradle.jvmargs=-Xmx4g -Pkotlin.daemon.jvmargs=-Xmx3g
+      - name: Restore personal Android signing key
+        if: matrix.platform == 'android'
+        env:
+          KEYSTORE: ${{ secrets.PERSONAL_KEYSTORE }}
+        run: |
+          test -n "$KEYSTORE" || { echo 'Missing PERSONAL_KEYSTORE secret'; exit 1; }
+          echo "$KEYSTORE" | base64 -d > "$RUNNER_TEMP/personal.jks"
+      - name: Build Android APK
+        if: matrix.platform == 'android'
+        env:
+          ORG_GRADLE_PROJECT_tasksStoreFile: ${{ runner.temp }}/personal.jks
+          ORG_GRADLE_PROJECT_tasksKeyAlias: personal
+          ORG_GRADLE_PROJECT_tasksStorePassword: ${{ secrets.PERSONAL_KEY_PASSWORD }}
+          ORG_GRADLE_PROJECT_tasksKeyPassword: ${{ secrets.PERSONAL_KEY_PASSWORD }}
+        run: ./gradlew :app:assembleGenericRelease -Dorg.gradle.jvmargs=-Xmx4g -Pkotlin.daemon.jvmargs=-Xmx3g
+      - name: Build desktop with bundled runtime
+        if: matrix.platform != 'android'
+        run: ./gradlew :composeApp:createDistributable -Dorg.gradle.jvmargs=-Xmx4g -Pkotlin.daemon.jvmargs=-Xmx3g
+      - name: Package AppImage
+        if: matrix.platform == 'linux'
+        run: scripts/personal/appimage.sh
+      - name: Package Windows portable app
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist
+          Compress-Archive -Path composeApp/build/compose/binaries/main/app/tasks-personal -DestinationPath dist/Tasks-Personal-windows-x86_64.zip
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Tasks-Personal-${{ matrix.platform }}
+          if-no-files-found: error
+          path: |
+            app/build/outputs/apk/generic/release/*.apk
+            dist/*

@@ -51,13 +51,13 @@ class SyncRunner(
     suspend fun syncNow(source: SyncSource) = mutex.withLock { runPass(source) }
 
     private suspend fun runPass(source: SyncSource) {
-        val subscriptionProvider = subscriptionProvider()
+        val subscriptionProvider by lazy { this.subscriptionProvider() }
         val accounts = caldavDao.getAccounts()
         val hasTasksOrg = accounts.any { it.isTasksOrg }
-        if (!hasTasksOrg && !subscriptionProvider.awaitVerification()) {
+        if (!org.tasks.billing.LocalFeatures.enabled && !hasTasksOrg && !subscriptionProvider.awaitVerification()) {
             Logger.e(TAG) { "Could not confirm subscription, syncing without pro" }
         }
-        val hasPro = hasTasksOrg || subscriptionProvider.subscription.first() != null
+        val hasPro = org.tasks.billing.LocalFeatures.enabled || hasTasksOrg || subscriptionProvider.subscription.first() != null
         Logger.d(TAG) { "sync source=$source accounts=${accounts.size} pro=$hasPro" }
         pass(
             SyncPass(

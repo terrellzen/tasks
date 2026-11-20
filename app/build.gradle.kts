@@ -124,6 +124,9 @@ android {
 
     productFlavors {
         create("generic") {
+            applicationIdSuffix = ".personal"
+            resValue("string", "opentasks_authority", "org.tasks.personal.opentasks")
+            resValue("string", "app_name", "Tasks Personal")
             dimension = "store"
             proguardFile("proguard-generic.pro")
         }
