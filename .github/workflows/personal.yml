@@ -17,6 +17,9 @@ jobs:
           - platform: windows
             os: windows-latest
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-gradle
