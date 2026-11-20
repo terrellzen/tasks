@@ -329,7 +329,8 @@ dependencies {
 // The independent generic app does not include Firebase and has its own package ID.
 // Do not process Tasks.org's Google Services client configuration for this flavor.
 tasks.configureEach {
-    if (name.startsWith("processGeneric") && name.endsWith("GoogleServices")) {
+    if ((name.startsWith("processGeneric") && name.endsWith("GoogleServices")) ||
+        (name.contains("Generic") && name.contains("Crashlytics"))) {
         enabled = false
     }
 }
