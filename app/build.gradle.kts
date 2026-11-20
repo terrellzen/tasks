@@ -325,3 +325,11 @@ dependencies {
     testImplementation(libs.xpp3)
     testGoogleplayImplementation(testFixtures(projects.googleplay))
 }
+
+// The independent generic app does not include Firebase and has its own package ID.
+// Do not process Tasks.org's Google Services client configuration for this flavor.
+tasks.configureEach {
+    if (name.startsWith("processGeneric") && name.endsWith("GoogleServices")) {
+        enabled = false
+    }
+}
