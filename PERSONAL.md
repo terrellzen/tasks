@@ -22,7 +22,7 @@ On the Actions page select **Run workflow**, branch **personal**. The workflow b
 
 The Android key is stored in this fork's encrypted Actions secrets (`PERSONAL_KEYSTORE`, `PERSONAL_KEY_PASSWORD`). A protected local backup was created at `/home/fedora/.local/share/tasks-personal/` on the build machine. Copy that entire directory to secure backup storage. Never commit the key or password. Losing it prevents updating this Android installation with a newly signed APK.
 
-For local builds install JDK 25, Android SDK platform 37 and build-tools 37, and set `ANDROID_HOME` (or `sdk.dir` in `local.properties`). Commands:
+For local builds install JDK 25, Android SDK platform 37.0 and build-tools 37, and set `ANDROID_HOME` (or `sdk.dir` in `local.properties`). Commands:
 
 ```sh
 python3 scripts/personal/check-policy.py
